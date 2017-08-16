@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinfoinsurance">
+
+	<sql id="item">
+		<if test="insuName!=null and insuName!=''">
+			and insuName like "%"#{insuName}"%"
+		</if>
+	</sql>
+	
+	<select id="all" resultType="insuranceBean">
+		select * from t_insurances where 1=1
+		<include refid="item"/>
+		limit #{first},#{pageSize};
+	</select>
+	
+	<select id="getCount" resultType="int">
+		select count(id) from t_insurances where 1=1 
+		<include refid="item"/>
+	</select>
+	
+	
+	<select id="findById" resultType="insuranceBean" parameterType="int">
+		select * from t_insurances where id=#{id};
+	</select>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="rule">
+	<!-- 查看所有制度 -->
+	<select id="findAll" resultType="rulesBean">
+		select * from t_rules 
+	</select>
+	<!-- 按ID查找 -->
+	<select id="findById" resultType="rulesBean">
+		select * from t_rules where id = #{id}
+	</select>
+	<!-- 根据制度ID修改内容 -->
+	<update id="update">
+		update t_rules set content = #{content} where id = #{id}
+	</update>
+	<!-- 添加制度 -->
+	<insert id="add" useGeneratedKeys="true" keyProperty="id"
+	parameterType="rulesBean">
+		insert into t_rules(ruleName,content) values(
+		#{ruleName},#{content})
+	</insert>
+</mapper>

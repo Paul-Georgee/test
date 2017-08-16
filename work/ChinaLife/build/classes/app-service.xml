@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+         					http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+							http://www.springframework.org/schema/data/jpa 
+							http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd
+							http://www.springframework.org/schema/tx 
+							http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+							http://www.springframework.org/schema/context
+							http://www.springframework.org/schema/context/spring-context-4.0.xsd
+							http://www.springframework.org/schema/aop
+                            http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+                            http://www.springframework.org/schema/mvc   
+							http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+	<bean id="database" class="org.apache.commons.dbcp.BasicDataSource">
+
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+		<property name="url"
+			value="jdbc:mysql://localhost:3306/chinalife?characterEncoding=utf-8&amp;allowMultiQueries=true"></property>
+		<property name="username" value="root"></property>
+		<property name="password" value="zll1994"></property>
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="10"></property>
+		<property name="maxWait" value="300"></property>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="database"></property>
+
+		<property name="typeAliasesPackage" value="com.project.bean"></property>
+
+		<property name="mapperLocations">
+			<list>
+
+
+				<!-- 扫描每一个bean的配置文件 -->
+				<value>classpath:com/project/leader/employees/mapper/leadUser.xml</value>
+				<value>classpath:com/project/leader/statement/mapper/leaderNumber.xml
+				</value>
+				<value>classpath:com/project/leader/gurantees/mapper/leadDepart.xml
+				</value>
+				<value>classpath:com/project/leader/gurantees/mapper/leadGurantee.xml
+				</value>
+
+				<value>classpath:com/project/leader/meeting/mapper/leadMeeting.xml
+				</value>
+				<!-- 扫描每一个bean的配置文件 -->
+				<!-- 系统管理员所有 mybaits 配置文件 -->
+				<value>classpath:com/project/departmentleader/employees/mapper/EmployeesBean.xml
+				</value>
+				<value>classpath:com/project/departmentleader/gurantees/mapper/GuranteesBean.xml
+				</value>
+				<value>classpath:com/project/departmentleader/statement/mapper/StatementBean.xml
+				</value>
+				<value>classpath:com/project/system/employee/mapper/SystemBean.xml
+				</value>
+
+
+				<value>classpath:com/project/admin/department/mapper/DepartmentBean.xml
+				</value>
+				<value>classpath:com/project/admin/insurance/mapper/InsuranceBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/email/mapper/EmailBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/email/mapper/SendEmailBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/changePwd/mapper/EmployeeBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/contacts/mapper/ContactBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/login/mapper/LoginBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/insurance/mapper/InsuranceBean.xml
+				</value>
+				<value>classpath:com/project/admin/department/mapper/DepartmentBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/forum/mapper/ForumBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/email/mapper/SendEmailBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/email/mapper/ReceiveEmailBean.xml
+				</value>
+				<value>classpath:com/project/leader/employees/mapper/EmployeeBean.xml
+				</value>
+				<value>classpath:com/project/admin/gurantee/mapper/GuranteeBean.xml
+				</value>
+				<value>classpath:com/project/admin/train/mapper/AdminTrainBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/forum/mapper/ForumBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/login/mapper/LoginBean.xml
+				</value>
+				<value>classpath:com/project/system/logs/mapper/LoginLogBean.xml
+				</value>
+				<value>classpath:com/project/system/logs/mapper/ErrorLogBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/notice/mapper/NoticeBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/rules/mapper/RulesBean.xml
+				</value>
+				<value>classpath:com/project/publicinfo/schedule/mapper/ScheduleBean.xml
+				</value>
+
+				<!-- 周琳琅 -->
+				<value>classpath:com/project/employee/orders/mapper/ManBean.xml
+				</value>
+				<value>classpath:com/project/employee/client/mapper/ManBean.xml
+				</value>
+				<value>classpath:com/project/admin/meeting/mapper/ManBean.xml
+				</value>
+				<value>classpath:com/project/admin/notice/mapper/ManBean.xml</value>
+				<value>classpath:com/project/admin/rules/mapper/ManBean.xml</value>
+				<value>classpath:com/project/admin/video/mapper/ManBean.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="session" class="org.mybatis.spring.SqlSessionTemplate"
+		scope="prototype">
+		<constructor-arg ref="sqlSessionFactory"></constructor-arg>
+	</bean>
+
+	<bean id="trans"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="database"></property>
+	</bean>
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	<tx:annotation-driven transaction-manager="trans" />
+	<context:component-scan base-package="com.project.util"></context:component-scan>
+	<context:component-scan base-package="com.project">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Service" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+</beans>

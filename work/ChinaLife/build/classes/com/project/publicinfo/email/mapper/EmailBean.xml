@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinfoEmail">
+	<resultMap type="receiveBean" id="receiveEmail">
+		<result column="id" property="id"/>		
+		<result property="state" column="state"/>
+		<result property="title" column="title"/>
+		<association property="email" javaType="com.project.bean.EmailBean">
+			<id property="id" column="id"/>
+			<result property="senderName" column="trueName"/>
+			<result property="emailTime" column="emailTime"/>
+			<result property="title" column="title"/>
+			<result property="content" column="content"/>
+			<result property="attachment" column="attachment"/>
+		</association>
+	</resultMap>
+	<!-- 邮件模糊查询的条件 -->
+	<sql id="emailDynaSql">
+		<if test="title != null and title != '' ">
+			and e.title like "%"#{title}"%" 
+		</if>
+		<if test="sender != null and sender != '' ">
+			and u.trueName like "%"#{sender}"%"
+		</if>
+	</sql>
+	<!-- 邮件查询出来的集合 -->
+	<select id="listSql" resultMap="receiveEmail">
+		SELECT ue.id,e.title,ue.state,u.trueName , e.emailTime from t_emails e LEFT join t_user_email ue on e.id = ue.emailId 
+		 left join t_users u on u.id = e.sendId where ue.receiveId = #{receiverId} and ue.trash = '否'
+		 <include refid="emailDynaSql"/>
+		 limit #{first},#{pageSize};
+	</select>
+	<!-- 邮件查询出来的总条数 -->
+	<select id="countSql" resultType="int">
+		SELECT count(*) from t_emails e LEFT join t_user_email ue on e.id = ue.emailId left join t_users u on u.id = e.sendId 
+		where ue.receiveId = #{receiverId} and ue.trash = '否' 
+		<include refid="emailDynaSql"/>
+	</select>
+	<!-- 将该邮件放入垃圾桶 -->
+	<update id="update">
+		update t_user_email ue set ue.trash = '是' where ue.id = #{id};
+	</update>
+	<!-- 查看邮件的时候将状态改为已读 -->
+	<update id="lookUpdate">
+		update t_user_email ue set ue.state = '已读' where ue.id = #{id};
+	</update>
+	<!-- 按Id查询邮件详情 -->
+	<select id="findById" resultMap="receiveEmail">
+		SELECT ue.id , e.title , u.trueName , e.content , e.attachment , e.emailTime from t_emails e LEFT join t_user_email ue on e.id = ue.emailId 
+		 left join t_users u on u.id = e.sendId where ue.id = #{id};
+	</select>
+</mapper>

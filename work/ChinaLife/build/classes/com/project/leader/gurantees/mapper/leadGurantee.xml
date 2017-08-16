@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="check">
+
+	<!-- 表单连表映射配置 -->
+	<resultMap type="guranteeBean" id="guranteeMap">
+		<result column="id" property="id"/>
+		<result column="insureTime" property="insureTime"/>
+		<result column="favoree" property="favoree"/>
+		<result column="signer" property="signer"/>
+		<result column="number" property="number"/>
+		<result column="duration" property="duration"/>
+		<result column="state" property="state"/>
+		<result column="followId" property="followerId"/>
+		<result column="followerName" property="followerName"/>
+		<!-- 险种 -->
+		<association property="insurance" column="insureId" javaType="com.project.bean.InsuranceBean">
+			<result column="id" property="id"/>
+			<result column="insuName" property="insuName"/>
+			<result column="price" property="price"/> 
+			<result column="content" property="content"/>
+			<result column="genre" property="genre"/>
+			<result column="validOrNot" property="validOrNot"/>	  
+		</association>
+		<!-- 客户 -->
+		<association property="client"  column="toutbaoId" javaType="com.project.bean.ClientBean">
+			<result column="id" property="id"/>
+			<result column="clientName" property="clientName"/>
+			<result column="tel" property="tel"/>
+			<result column="gender" property="gender"/>
+			<result column="profession" property="profession"/>
+			<result column="family" property="family"/>
+			<result column="salary" property="salary"/>
+			<result column="birthday" property="birthday"/>
+		</association>
+		<!-- 理赔 -->
+		<association property="audit"  column="id" javaType="com.project.bean.AuditBean">
+			<result column="id" property="id"/>
+			<result column="applyTime" property="applyTime"/>
+			<result column="applyReason" property="applyReason"/>
+			<result column="leadTime" property="auditTime"/>
+			<result column="leadReason" property="auditReason"/>
+			<result column="insuranceId" property="policyId"/>
+		</association>		
+	</resultMap>
+		
+	<select id="findById" resultMap="guranteeMap">
+		SELECT *,ic.insureTime,u.username as followerName
+		
+		from t_insurance_client ic
+		<!-- 投保人id；关联客户 -->
+		left join t_clients c on c.id = ic.toubaoId
+		<!-- 跟踪人ID : 关联用户 -->
+		left join t_users u on u.id = ic.followId 
+		<!-- 险种ID ：关联险种 -->
+		left join t_insurances i on i.id = ic.insureId
+		<!-- 理赔ID : 关联理赔 -->
+		left join t_audit a on a.insuranceId = ic.id
+		where ic.id=#{id};
+	</select>
+	
+	<update id="checkPass">
+		update t_audit set leadReason = #{auditReason} where insuranceId = #{id};
+		update t_insurance_client set state = "理赔失效" where id = #{id};
+	</update>
+	
+	<update id="checkBack" >
+		delete from t_audit where insuranceId = #{id};
+		update t_insurance_client set state = "有效" where id = #{id};
+	</update>
+	
+
+	<!-- 查看所有保单信息 -->
+	<sql id="dynaSql">
+		<if test="departmentId != null and departmentId !=''">
+			and ic.departmentId = #{departmentId}
+		</if>
+		<if test="signer != null and signer !=''">
+			and ic.signer like "%"#{signer}"%"
+		</if>
+		<if test="insuName != null and insuName !=''">
+			and i.insuName like "%"#{insuName}"%"
+		</if>
+		<if test="clientName != null and clientName !=''">
+			and c.clientName like "%"#{clientName}"%"
+		</if>
+		<if test="state != null and state !=''">
+			and ic.state = #{state}
+		</if>
+		<if test="start != null ">
+			and ic.insureTime >= #{start}
+		</if>
+		<if test="end != null ">
+			<![CDATA[
+				and ic.insureTime <= #{end}
+			]]>
+		</if>
+	</sql>
+	
+	<select id="listSql" resultType="guranteeBean">
+		select *,ic.insureTime,followId as followerId ,u.username as followerName
+		
+		from t_insurance_client ic
+		
+		left join t_users u on ic.followId = u.id
+		left join t_insurances i on ic.insureId = i.id
+		left join t_clients c on ic.toubaoId = c.id
+		where 1=1 
+		<include refid="dynaSql"/>
+		limit #{first}, #{pageSize};
+	</select>
+	
+	<select id="countSql" resultType="int">
+		select count(*) from t_insurance_client ic
+		
+		left join t_users u on ic.followId = u.id
+		left join t_insurances i on ic.insureId = i.id
+		left join t_clients c on ic.toubaoId = c.id
+		
+		where 1=1  
+		<include refid="dynaSql"/>
+	</select>
+	
+	
+	<!-- 所有理赔表单 -->
+	
+	<select id="listSqlCheck" resultMap="guranteeMap">
+		select *,followId as followerId ,u.username as followerName
+		
+	    from t_audit  
+		
+		left join t_insurance_client ic on insuranceId = ic.id
+		left join t_users u on ic.followId = u.id
+		left join t_clients c on c.id = ic.toubaoId
+		left join t_insurances i on ic.insureId = i.id
+		left join t_departments d on d.id = ic.departmentId
+		left join t_audit a on a.insuranceId = ic.id
+
+		where ic.state = "理赔中" ;
+	</select>
+
+	
+	
+	
+	
+	
+	
+</mapper>

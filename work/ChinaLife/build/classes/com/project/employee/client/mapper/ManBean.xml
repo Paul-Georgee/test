@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="client">
+	<resultMap type="clientBean" id="clientMap">
+		<id property="user_id" column="userId"/>
+	</resultMap>
+<!-- 模糊查询条件 -->
+	<sql id="item">
+		<if test="clientName != null and  clientName !='' ">
+		 and clientName like "%"#{clientName}"%"
+		</if>
+		<if test="profession != null and profession!='' ">
+		 and profession like "%"#{profession}"%"
+		</if>
+	</sql>
+	
+	<!-- 模糊查询分页 -->
+	<select id="findByItem" resultMap="clientMap">
+		SELECT * FROM t_clients WHERE userId= #{userId} and 1=1
+		<include refid="item"/>
+		limit #{first},#{pageSize}
+	</select>
+	<!-- 模糊查询后的记录数 -->
+	<select id="count" resultType="int">
+		SELECT COUNT(*) from t_clients WHERE userId = #{userId}
+		and 1 = 1
+		<include refid="item"/>
+	</select>
+	<!-- 添加客户 -->
+	<insert id="add" parameterType="clientBean"
+	useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_clients(clientName,tel,gender,profession,family,
+		salary,birthday,userId) VALUES(#{clientName},#{tel},#{gender},
+		#{profession},#{family},#{salary},#{birthday},#{user_id});
+	</insert>
+	<!-- 按客户ID查看该客户的详细信息 -->
+	<select id="findById" resultMap="clientMap">
+		select * from t_clients where id=#{clientId};
+	</select>
+	<!-- 按客户ID修改客户信息 -->
+	<update id="update" >
+		UPDATE t_clients SET salary = #{salary},
+		profession = #{profession},tel = #{tel},family = #{family} 
+		WHERE id = #{clientId};
+	</update>
+</mapper>

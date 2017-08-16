@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinfoemail">
+<!--  -->
+	<resultMap type="receiveBean" id="receive">
+		<result column="id" property="id"/>
+		<result column="state" property="state"/>
+		<result column="title" property="title"/>
+		<association property="email" javaType="com.project.bean.EmailBean">
+			<id property="id" column="id"/>
+			<result property="title" column="title"/>
+			<result property="emailTime" column="emailTime"/>
+			<result property="senderName" column="trueName"/>
+			<result property="attachment" column="attachment"/>
+			<result property="content" column="content"/>
+			<result property="senderId" column="senderId"/>
+		</association>
+	</resultMap>
+	
+	<!-- 模糊查询 -->
+	<sql id="item">
+		<if test="title!=null and title!=''">
+			and e.title like "%"#{title}"%"
+		</if>
+		<if test="sender!=null and sender !=''">
+			and u.trueName like "%"#{sender}"%"
+		</if>
+	</sql>
+	<!-- 获取用户收件箱的列表 -->
+	<select id="getReceives" resultMap="receive">
+		 SELECT tue.id,tue.state,e.title,e.emailTime,u.trueName FROM t_user_email tue LEFT JOIN
+		 t_emails e ON tue.emailId=e.id LEFT JOIN t_users u ON e.sendId=u.id WHERE tue.trash='否'
+		 AND tue.receiveId =#{receiveId}
+		 <include refid="item"/>
+		 limit #{first},#{pageSize};
+	</select>
+	
+	<!-- 获取收件箱总数 -->
+	<select id="getCount" resultType="int">
+		SELECT count(tue.id) as count FROM t_user_email tue LEFT JOIN
+		t_emails e ON tue.emailId=e.id LEFT JOIN t_users u ON e.sendId=u.id WHERE tue.trash='否'
+		<include refid="item"/> and tue.receiveId =#{receiveId};
+	</select>
+	
+	<!-- 阅读邮件,将邮件状态改为已读 -->
+	<update id="trashEmail" parameterType="int">
+		update t_user_email set trash='是' where id=#{id};
+	</update>
+	
+	<!-- 查看邮箱详情 -->
+	<select id="getEmailInfo" parameterType="int" resultMap="receive">
+		 SELECT tue.id,tue.state,e.title,e.emailTime,u.trueName,u.id as senderId,
+		 e.content,e.attachment FROM t_user_email tue LEFT JOIN
+		 t_emails e ON tue.emailId=e.id LEFT JOIN t_users u ON e.sendId=u.id where tue.id=#{id};
+		 update t_user_email set state='已读' where id=#{id}; 
+	</select>
+</mapper>

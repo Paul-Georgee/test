@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="depart">
+	<select id="allDepart" resultType="departmentBean">
+		select * from t_departments
+		order by departName;
+	</select>
+	
+	<select id="countDepart" resultType="int">
+		select count(*) from t_departments;
+	</select>
+	
+	<select id="allInsurance" resultType="insuranceBean">
+		SELECT * from t_insurances;
+	</select>
+		<select id="countInsurance" resultType="int">
+		SELECT count(*) from t_insurances;
+	</select>
+</mapper>

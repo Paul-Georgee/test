@@ -1,0 +1,13 @@
+eclipse.preferences.version=1
+encoding//WebContent/jsp/admin/signedUpload.jsp=GBK
+encoding//src/com/project/admin/insurance/service/impl/InsuranceServiceImpl.java=UTF-8
+encoding//src/com/project/admin/video/controller/videoAction.java=UTF-8
+encoding//src/com/project/admin/video/service/impl/VideoServiceImpl.java=UTF-8
+encoding//src/com/project/bean/MeetingBean.java=GBK
+encoding//src/com/project/employee/client/controller/clientAction.java=UTF-8
+encoding//src/com/project/employee/orders/controller/ordersAction.java=UTF-8
+encoding//src/com/project/publicinfo/login/controller/LoginAction.java=GBK
+encoding//src/com/project/util/ReadExcelToObj.java=UTF-8
+encoding//src/com/project/util/UploadUtil.java=UTF-8
+encoding//src/com/project/util/makeCertPic.java=UTF-8
+encoding//src/log4j.properties=UTF-8

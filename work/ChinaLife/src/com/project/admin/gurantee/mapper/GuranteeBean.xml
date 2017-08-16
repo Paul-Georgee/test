@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="adminGurantee">
+	<!-- 上传文件添加保单 -->
+	<insert id="uploadGurantees" parameterType="guranteeBean">
+		insert into t_insurance_client(insureTime,favoree,signer,number,duration,
+		departmentId,insureId,toubaoId,followId) values
+		<foreach collection="gurantees" item="gurantee" separator=",">
+		(#{gurantee.insureTime},#{gurantee.favoree},#{gurantee.signer},
+		#{gurantee.number},#{gurantee.duration},#{gurantee.departmentId},
+		#{gurantee.insurance.id},#{gurantee.client.id},#{gurantee.followerId})</foreach>
+	</insert>
+	
+</mapper>

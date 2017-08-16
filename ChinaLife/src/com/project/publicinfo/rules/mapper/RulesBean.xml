@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinforules">
+	
+	<!-- 查询所有规章制度 -->
+	<select id="findByAll" resultType="rulesBean">
+		select * from t_rules;
+	</select>
+	
+	<!--  -->
+	<select id="find1" resultType="rulesBean">
+		select * from t_rules limit 1;
+	</select>
+	
+</mapper>

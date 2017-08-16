@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinfoSendEmail">
+	<!-- 模糊查询的条件 -->
+	<sql id="sendEmailDynaSql">
+		<if test="title != null and title != '' ">
+			and title like "%"#{title}"%" 
+		</if>
+	</sql>
+	<!-- 模糊查询出来的记录集合 -->
+	<select id="listSql" resultType="emailBean">
+		select e.* from t_emails e where e.sendId = #{userId} and e.trash = '否'
+		<include refid="sendEmailDynaSql"/>
+		limit #{first},#{pageSize};
+	</select>
+	<!-- 模糊查询出来的记录总条数 -->
+	<select id="countSql" resultType="int">
+		select count(*) from t_emails e where e.sendId = #{userId} and e.trash = '否'
+		<include refid="sendEmailDynaSql"/>
+	</select>
+	<!-- 按ID查看发件箱详情 -->
+	<select id="findById" resultType="emailBean">
+		SELECT e.* from t_emails e where e.id = #{id};
+	</select>
+	<update id="update">
+		update t_emails e set e.trash = '是' where e.id = #{id};
+	</update>
+	<!-- 添加发件箱表 -->
+	<insert id="addSend" parameterType="emailBean" useGeneratedKeys="true" keyProperty="id">
+		insert into t_emails(title,content,attachment,receivers,sendId,emailTime) values(#{title},#{content},
+		#{attachment},#{receivers},#{senderId},#{emailTime});
+	</insert>
+	<insert id="addReceivers">
+		insert into t_user_email(receiveId,emailId) values 
+		<foreach collection="receiverId" item="obj" separator=",">
+			(#{obj},#{id})
+		</foreach>
+	</insert>
+	<sql id="sendEmailFindUserDynaSql">
+		<if test="userName != null and userName != '' ">
+			and u.trueName like "%"#{userName}"%" 
+		</if>
+	</sql>
+	<select id="sendEmailListSql" resultType="userBean">
+		SELECT u.*,d.departName as department from t_users u left join t_departments d ON u.departId = d.id where 1 = 1 
+		<include refid="sendEmailFindUserDynaSql"/>
+		limit #{first},#{pageSize};
+	</select>
+	<select id="sendEmailCountSql" resultType="int">
+		SELECT count(*) from t_users u left join t_departments d ON u.departId = d.id where 1 = 1 
+		<include refid="sendEmailFindUserDynaSql"/>
+	</select>
+</mapper>

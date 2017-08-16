@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system">
+	<!-- 动态分页查询 -->
+	<sql id="pageSql">
+		<if test=" trueName != null and trueName != ''">
+			and trueName like "%"#{trueName}"%"
+		</if>
+		
+		<if test="duty != null and  duty != ''">
+			and duty like "%"#{duty}"%"
+		</if>
+	</sql>
+	
+	<!--查询集合 -->
+	<select id="listSql" resultType="userBean">
+		select  u.id,u.trueName,u.gender,u.duty,u.tel,u.state,u.departId, d.departName as department from t_users as u inner join t_departments as d on u.departId=d.id where u.state='在职'  
+		<include refid="pageSql"/>
+		limit #{first},#{pageSize}
+	</select>
+	
+	<!-- 总记录数 -->
+	<select id="countSql" resultType="int">
+		select count(u.id),d.departName as department from t_users as u inner join t_departments as d on u.departId=d.id where u.state='在职' 
+		<include refid="pageSql"/>	
+	</select>
+	
+	<!-- 添加用户 -->
+	<!-- 先查询出所有部门的名称与对应的id -->
+	<select id="findDepartment" resultType="departmentBean">
+		select d.id,d.departName from t_departments as d 
+	</select>
+	
+	
+	
+	<insert id="addUserBean" parameterType="userBean" useGeneratedKeys="true" keyProperty="id">
+		insert into t_users(username,trueName,password,email,tel,gender,birthday,avatar,state,duty,education,departId) values(
+			#{username},#{trueName},#{password},#{email},#{tel},#{gender},#{birthday},#{avatar},#{state},#{duty},#{education},#{departId}
+		)
+	</insert>
+	
+	
+	<!-- 修改前判断当前用户是不是某个部门的负责人 -->
+	<select id="findUserRole" resultType="userBean">
+		select role,departId from t_users where id=#{id}
+	</select>
+	
+	<!-- 如果是部门负责人那么就会修改当前对象 -->
+	<update id="updateDepartHeaderToNull">
+		update t_departments set departHeaderId=null where id=#{id}
+	</update>
+	
+	<!-- 如果修改为部门负责人那对应部门的部门负责人就应该修改为当前对象 同时修改原负责人的职务为业务员 -->
+	<update id="updateDepartmentHeader">
+		update t_users set role='业务员' where id=(select departHeaderId from t_departments where id=#{departId});
+		update t_departments set departHeaderId=#{id} where id=#{departId};
+	</update>
+	
+	
+	
+	<!-- 修改员工信息 -->
+	<update id="updateInfo">
+		update t_users set duty=#{duty},tel=#{tel},role=#{role},departId=#{departId} where id=#{id}
+	</update>
+	
+	<select id="findUserById" resultType="userBean">
+		select u.*,d.departName as department from t_users as u inner join t_departments as d on u.departId=d.id where u.id=#{id}
+	</select>
+	
+	<resultMap type="guranteeBean" id="findGuranteeBean">
+		<result column="id" property="id"/>
+		<association property="insurance" column="id" select="system.findInsurance"></association>
+		<association property="client" column="id" select="system.findClient"></association>
+	</resultMap>
+	<!-- 查看员工有效保单 -->
+	<select id="findInsurancesList" resultMap="findGuranteeBean">
+		select ic.id,ic.number,ic.signer from t_insurance_client as ic inner join t_insurances as i on i.id=ic.insureId  inner join t_clients as c  on ic.toubaoId=c.id where ic.state='有效' and ic.followId=#{id}
+		limit #{first},#{pageSize}
+	</select>
+	<select id="findInsuranceCount" resultType="int">
+		select count(ic.id) from t_insurance_client as ic inner join t_insurances as i on i.id=ic.insureId  inner join t_clients as c  on ic.toubaoId=c.id where ic.state='有效' and ic.followId=#{id}
+	</select>
+	<select id="findInsurance" resultType="insuranceBean">
+		select insuName from t_insurances where id=#{id}
+	</select>
+	<select id="findClient" resultType="clientBean">
+		select clientName from t_clients where id=#{id}
+	</select>
+	
+	<!-- 修改保单跟踪人 -->
+	<update id="updateFollow">
+		update t_insurance_client as ic set ic.followId=#{id} where  ic.id in
+		<foreach collection="gurantees" item="obj" open="(" separator="," close=")">
+			#{obj}
+		</foreach>
+	</update>
+	
+	<!-- 删除前先判断用户是否还有有效保单 -->
+	<select id="findInsuranceById" resultType="int">
+		select count(*) as count from t_insurance_client as ic where ic.state='有效' and ic.followId=#{id}
+	</select>
+	
+	<!-- 如果没有就修改当前用户的状态为离职,如果本来是部门管理人 那么就会将该部门管理人置空 -->
+	<update id="updateUserState">
+		update t_users set state = '离职' where id=#{userId};
+		update t_departments set departHeaderId=null where '部门负责人'=(select role from t_users where id=#{userId}) AND departHeaderId=#{userId}
+	</update>
+	
+	<!-- 查看其同一部门的其他业务员 -->
+	<sql id="pageSql2">
+		<if test=" trueName !=null and trueName != ''">
+			and trueName like "%"#{trueName}"%"
+		</if>
+	</sql>
+	
+	<select id="listSql2" resultType="userBean">
+		select u.id,u.trueName,u.gender,u.tel,u.role,u.departId from t_users as u where u.id!=#{id} and u.departId=(select departId from t_users where id=#{id}) 
+		<include refid="pageSql2"/>
+		limit #{first},#{pageSize}	
+	</select>
+	
+	<select id="countSql2" resultType="int">
+		select count(u.id),u.departId from t_users as u where  u.id!=#{id} and u.departId=(select departId from t_users where id=#{id}) 
+		<include refid="pageSql2"/>
+	</select>
+	
+</mapper>

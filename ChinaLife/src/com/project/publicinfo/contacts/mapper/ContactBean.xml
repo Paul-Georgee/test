@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinfocontacts">
+	<sql id="item">
+		<if test="trueName!=null and trueName!=''">
+			and u.trueName like "%"#{trueName}"%"
+		</if>
+		<if test="duty!=null and duty!=''">
+			and u.duty like "%"#{duty}"%"
+		</if>
+		<if test="departmentId!=null">
+			and u.departId=#{departmentId}
+		</if>
+	</sql>
+	
+	<select id="contact" resultType="userBean">
+		select u.id,u.trueName,u.gender,u.tel,u.duty,d.departName as department,d.id as departId
+		 from t_users u left join t_departments d on u.departId = d.id where 1=1 
+		 <include refid="item"/>
+		 limit #{first},#{pageSize};
+	</select>
+	
+	<select id="getCount" resultType="int">
+		select count(u.id) from t_users u left join t_departments d on u.departId=d.id 
+		where 1=1 
+		<include refid="item"/>;
+	</select>
+</mapper>

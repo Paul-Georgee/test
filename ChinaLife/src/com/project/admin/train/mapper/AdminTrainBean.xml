@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="adminTrain">
+
+	<sql id="item">
+		<if test="trueName!=null and trueName!=''">
+			and  u.trueName like "%"#{trueName}"%"
+		</if>
+	</sql>
+	
+	<select id="getEmployees" resultType="userBean">
+		select u.id,u.trueName,u.tel,u.duty,d.departName as department,u.departId 
+		 from t_users u left join t_departments d on d.id=u.departId where 1=1 
+		 <include refid="item"/>
+		 limit #{first},#{pageSize};
+	</select>
+	
+	<select id="getCount" resultType="int">
+		select count(u.id) as count from t_users u where 1=1
+		<include refid="item"/>;
+	</select>
+	
+	<select id="getTrains" resultType="trainBean">
+		select t.id,t.content,t.trainTime,t.location,t.state from t_trains t limit #{first},#{pageSize};
+	</select>
+	
+	<select id="getTrainCount" resultType="int">
+		select count(id) as count from t_trains;
+	</select>
+	
+	<!-- 查看培训详情,同时连带着培训的用户信息 -->
+	<select id="getTrainInfo" resultMap="TrainInfo">
+		select t.id,t.content,t.trainTime,t.location,t.state,t.endTime from t_trains t where t.id=
+		#{id};
+	</select>
+	
+	<resultMap type="trainBean" id="TrainInfo">
+		<result property="id" column="id"/>
+		<association property="trains" column="id" select="getTrainersInfo"></association>
+	</resultMap>
+	
+	<select id="getTrainersInfo" parameterType="int" resultType="userTrainBean">
+		select tut.id,u.trueName as username,u.tel,d.departName as department,u.duty,tut.point
+		from t_users u left join t_departments d on u.departId=d.id left join t_user_train tut
+		 on tut.userId=u.id where tut.trianId=#{id};
+	</select>
+	
+	<insert id="addTrain" useGeneratedKeys="true" keyProperty="id" parameterType="trainBean">
+		insert into t_trains(trainTime,duration,content,location) values
+		(#{trainTime},#{duration},#{content},#{location});
+	</insert>
+	
+	<insert id="addTrainers">
+		insert into t_user_train(trianId,userId) values
+		<foreach collection="arrayUsersId" item="userId" separator=",">
+		(#{trainId},#{userId})</foreach>
+	</insert>
+	
+	<update id="endTrain" parameterType="int">
+		update t_trains set state = '已完成' where id=#{id};
+	</update>
+	
+	<update id="insertPoint">
+		update t_user_train set point=#{point} where id=#{id};
+	</update>
+	
+	
+</mapper>

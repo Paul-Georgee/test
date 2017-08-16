@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="oders">
+<!-- 为了取出个人签单和查看保单所需的值   设置对应属性 -->
+	 <resultMap type="guranteeBean" id="orderMap"> 
+		 <result property="id" column="id"/>
+		 <result property="insureTime" column="insureTime"/>
+		 <result property="favoree" column="favoree"/>
+		 <result property="signer" column="signer"/>
+		 <result property="number" column="number"/>
+		 
+        <association property="client" javaType="com.project.bean.ClientBean">
+       	    <id column="toubaoId" property="id"/>  
+            <result column="clientName" property="clientName"/> 
+             <result property="tel" column="tel"/>
+             <result property="gender" column="gender"/>
+			 <result property="profession" column="profession"/>
+			 <result property="family" column="family"/>
+			 <result property="salary" column="salary"/>
+			 <result property="birthday" column="birthday"/>
+        </association>
+        
+        <association property="insurance" javaType="com.project.bean.InsuranceBean" >
+            <id column="insureId" property="id"/>  
+            <result column="insuName" property="insuName"/>  
+            <result property="price" column="price"/>
+			 <result property="content" column="content"/>
+			 <result property="genre" column="genre"/>
+			 <result property="validOrNot" column="validOrNot"/>
+        </association>
+    </resultMap> 
+	
+
+	<!-- 按业务员ID查询所有有效保单，其中包括保险类和投保人的部分信息 -->
+	<select id="findAll" resultMap="orderMap">
+	 select tic.*,i.*,c.* from t_insurance_client tic,t_clients c ,
+	 t_insurances i WHERE tic.toubaoId=c.id and tic.insureId = i.id 
+	 AND tic.followId = #{id} limit #{first},#{pageSize}
+	</select>
+	
+	<!-- 得到个人签单记录数，方便分页 -->
+	<select id="count" resultType="int">
+		SELECT COUNT(*) FROM t_insurance_client WHERE followId=#{id}
+	</select>
+	
+	<!-- 查看保单所需要的数据 -->
+	<select id="showGurantee" resultMap="orderMap">
+	 select tic.*,i.*,c.* from t_insurance_client tic,t_clients c ,
+	 t_insurances i WHERE tic.toubaoId=c.id and tic.insureId = i.id 
+	 AND tic.number = #{guranteeId}
+	</select>
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Gurantees">
+	<!-- 本部门保单动态分页查询 -->
+	<sql id="pageSql">
+		<!-- 受益人 -->
+		<if test="favoree !=null and favoree != ''">
+			and favoree like "%"#{favoree}"%"
+
+		</if>
+		<!-- 起始日期 -->
+		<if test="start != null">
+			and insureTime >= #{start}
+		</if>
+		<!-- 结束时间 -->
+		<if test="end != null">
+			<![CDATA[
+			and insureTime <= #{end}
+			]]>
+		</if>
+		<!-- 保单号 -->
+		<if test="number !=null and number != ''">
+			and number like "%"#{number}"%"
+		</if>
+		<!-- 签单人 -->
+		<if test="signer !=null and signer != ''">
+			and signer like "%"#{signer}"%"
+		</if>
+
+	</sql>
+	
+	<resultMap type="guranteeBean" id="findInsuranceName">
+		<result column="id" property="id"/>
+		<association property="insurance" column="id" select="Gurantees.findINname"></association>
+		<association property="client" column="id" select="Gurantees.findClName"></association>
+	</resultMap>
+
+	<!-- 查询条件集合 -->
+	<select id="listSql" resultMap="findInsuranceName">
+		select ic.id,ic.insureTime,ic.favoree,ic.signer,ic.number from
+		t_insurance_client as ic inner join t_departments as
+		d on
+		ic.departmentId=d.id inner join t_insurances as i on
+		ic.insureId=i.id
+		where ic.state='有效' and d.id=#{id}
+		<include refid="pageSql" />
+		limit #{first},#{pageSize}
+	</select>
+
+	<select id="countSql" resultType="int">
+		select count(ic.departmentId) from t_insurance_client as ic inner join
+		t_departments as d on ic.departmentId=d.id where ic.state='有效' and
+		d.id=#{id}
+		<include refid="pageSql" />
+	</select>
+	<!-- 查询保险名 -->
+	<select id="findINname" resultType="insuranceBean">
+		select i.insuName from t_insurances as i where  id =#{id}
+	</select>
+	<!--查询投保人名字 -->
+	<select id="findClName" resultType="clientBean">
+		select c.clientName from t_clients as c where id =#{id}
+	</select>
+
+	<!-- 根据保单ID 查看保单详情 -->
+	<resultMap type="guranteeBean" id="findMap">
+		<result column="id" property="id" />
+		<association property="insurance" column="id"
+			select="Gurantees.findInsurance"></association>
+		<association property="client" column="id"
+			select="Gurantees.findClient"></association>
+	</resultMap>
+	<select id="findById" resultMap="findMap">
+		select
+		ic.insureTime,ic.favoree,c.*,i.* from t_insurance_client as ic inner
+		join t_insurances as i on ic.insureId=i.id inner join t_clients as c
+		on ic.toubaoId = c.id where ic.id=#{id}
+
+	</select>
+
+	<select id="findInsurance" resultType="insuranceBean">
+		select * from t_insurances
+		where id=#{id}
+	</select>
+	<select id="findClient" resultType="clientBean">
+		select * from t_clients where
+		id=#{id}
+	</select>
+
+	<!-- 保单申请理赔 -->
+	<insert id="addAuditBean">
+		insert into
+		t_audit(insuranceId,applyReason,applyTime) values(
+		#{id},#{applyReason},#{applyTime}
+		)
+	</insert>
+	<!-- 修改保单状态 -->
+	<update id="updateInsurance">
+		update t_insurance_client as ic set ic.state='理赔中'
+		where ic.id=#{id}
+	</update>
+
+	<!-- 终止保单修改保单状态 -->
+	<update id="updateInsuranceById">
+		update t_insurance_client as ic set ic.state='终止失效'
+		where ic.id=#{id}
+	</update>
+</mapper>

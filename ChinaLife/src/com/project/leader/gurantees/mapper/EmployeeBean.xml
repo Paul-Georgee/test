@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="leaderEmployees">
+
+	<sql id="item">
+		<if test="trueName!=null and trueName!=''">
+			and u.trueName like "%"#{trueName}"%"
+		</if>
+		<if test="duty!=null and duty!=''">
+			and u.duty like "%"#{duty}"%"
+		</if>
+		<if test="departmentId!=null">
+			and d.id = #{departmentId}
+		</if>
+	</sql>
+	
+	<select id="getEmployees" resultType="userBean">
+		select u.id,u.trueName,u.gender,u.tel,u.duty,d.departName from t_users u left join
+		t_departments d on u.departId=d.id where state='在职' 
+		 <include refid="item"/>
+		 limit #{first},#{pageSize};
+	</select>
+	
+	<select id="getCount" resultType="int">
+		select count(u.id) from t_users u left join t_departments d on u.departId=d.id
+		  where u.state='在职'
+		<include refid="item"/>;
+	</select>
+	
+	<resultMap type="userBean" id="EmpInfo">
+		<result property="id" column="id"/>
+		<association property="trains" select="getTrains" column="id"></association>
+	</resultMap>
+	
+	<select id="getEmpInfo" parameterType="int" resultMap="EmpInfo">
+		select u.id,u.trueName,u.gender,u.tel,u.duty,d.departName from t_users u left join
+		t_departments d on u.departId=d.id where state='在职' and u.id=#{id};
+	</select>
+	
+	<select id="getTrains" resultType="userTrainBean" parameterType="int">
+		select t.trainTime,t.content,tut.point from t_user_train tut left join t_trains t on 
+		t.id=tut.trianId where tut.userId=#{id};
+	</select>
+	
+</mapper>

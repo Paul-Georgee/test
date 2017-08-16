@@ -1,0 +1,58 @@
+* {
+    padding: 0px;
+    margin: 0px auto;
+}
+.modal{
+    margin-top: 0px;
+}
+.content{
+    text-align: center;
+}
+.divTitle{
+    color: black;
+    font-size: 30px;
+    text-align: center;
+    line-height: 60px;
+    height: 10%;
+    width: 100%;
+}
+.divInp{
+    height:50px;
+    width: 600px;
+    margin:auto;
+    margin-bottom: 20px;
+    margin-top:20px;
+}
+.div3{
+    height: 60%;
+/*    width: 900px;*/
+    margin:auto;
+}
+.divPage{
+    width: 500px;
+    height: 40px;
+    margin:auto;
+    margin-top: 50px;
+}
+
+.control-label{
+    margin-top: 5px;
+}
+.page-btn{
+    margin-top: 10px;
+}
+.table tr th{
+    text-align: center;
+}
+.dl-form dt{
+    text-align: right;
+}
+.dl-form dd{
+    text-align: left;
+}
+.left-make{
+     width: 40%;
+}
+.input-sm{
+     padding-top:0px;
+}

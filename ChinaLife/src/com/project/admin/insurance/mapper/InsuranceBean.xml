@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="adminInsurance">
+	<insert id="add" parameterType="insuranceBean">
+		insert into t_insurances(insuName,price,content,genre) values(#{insuName},#{price},#{content},#{genre});
+	</insert>
+	<select id="findById" resultType="insuranceBean">
+		select * from t_insurances where id = #{id};
+	</select>
+	<update id="update">
+		update t_insurances set validOrNot = '无效' where id = #{id};
+	</update>
+	<sql id="insuranceDynaSql">
+		<if test="insuName != null and insuName != '' ">
+			and insuName like "%"#{insuName}"%" 
+		</if>
+		<if test="state != null and state != '' ">
+			and validOrNot = #{state} 
+		</if>
+	</sql>
+	<select id="listSql" resultType="insuranceBean">
+		select * from t_insurances where 1 = 1 
+		<include refid="insuranceDynaSql"/>
+		limit #{first},#{pageSize};
+	</select>
+	<select id="countSql" resultType="int">
+		select count(*) from t_insurances where 1 = 1
+		<include refid="insuranceDynaSql"/>
+	</select>
+</mapper>

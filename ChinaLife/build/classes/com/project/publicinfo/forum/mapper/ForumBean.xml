@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="publicinfoforum">
+<!-- 查看板块首页的板块列表显示 -->
+	<select id="getForums" resultType="forumBean">
+		select f.id,f.forumName,f.moderator,count(p.modelId) as articles from
+		 t_forums f left join t_posts p on
+		 f.id=p.modelId group by p.modelId;
+	</select>
+	
+<!-- 添加板块功能sql语句 -->
+	<insert id="add" parameterType="forumBean">
+		insert into t_forums(forumName,moderator) values(#{forumName},#{moderator});
+	</insert>
+	
+<!-- 帖子模糊查询sql -->
+	<sql id="item">
+		<if test="title!=null and title!=''">
+			and p.title like "%"#{title}"%"
+		</if>
+		<if test="username!=null and username!=''">
+			and u.username like "%"#{username}"%"
+		</if>
+		<if test="start!=null">
+			<![CDATA[ and p.postTime>=#{start}]]>
+		</if>
+		<if test="end!=null">
+			<![CDATA[ and p.postTime<=#{end}]]>
+		</if>
+	</sql>
+	
+	<resultMap type="postBean" id="posts">
+		<result property="id" column="id"/>
+		<association property="count" select="getCommentCount" column="id"></association>
+	</resultMap>
+	
+<!-- 首页显示帖子列表的sql语句 -->
+	<select id="getPosts" resultMap="posts">
+		SELECT p.id,p.title,p.content,p.postTime,u.username AS authorName,u.id AS authorId,
+		u.avatar AS authorAvatar,f.id AS forumId,f.forumName 
+		FROM t_posts p,t_forums f,t_users u WHERE p.`userId`=u.`id` AND f.`id`=p.`modelId`
+		 AND f.`id`=#{forumId}
+		<include refid="item"/> 
+		order by p.postTime desc limit #{first},#{pageSize};
+	</select>
+	
+	<!-- 获取每篇帖子回帖数 -->
+	<select id="getCommentCount" resultType="int" parameterType="int">
+		select count(id) as count from t_comments where postId=#{id};
+	</select>
+	
+	<!-- 获取板块的帖子总数 -->
+	<select id="getPostCount" resultType="int">
+		select count(p.id)
+		from t_posts p left join t_users u on p.userId=u.id left join t_forums f on p.modelId=
+		f.id left join t_comments c on c.postId=p.id where p.modelId=#{forumId} and 1=1
+		<include refid="item"/>
+	</select>
+	
+	<resultMap type="postBean" id="postMap">
+		<result property="id" column="id"/>
+		<association property="comments" select="getComments" column="id">
+		</association>
+	</resultMap>
+	
+	<!-- 获取帖子详情 -->
+	<select id="getPost" resultMap="postMap" parameterType="int">
+		select p.id,p.title,p.content,p.postTime,u.username as authorName,u.id as authorId,
+		u.avatar as authorAvatar 
+		from t_posts p left join t_users u on p.userId=u.id  where p.id=#{id};
+	</select>
+	
+
+	<!-- 连接查询到帖子的回帖 -->
+	<select id="getComments" resultType="commentBean" parameterType="int">
+		select c.id,c.content,c.commentTime,u.username as commenter,u.avatar from 
+		t_comments c inner join t_users u on c.userId=u.id where c.postId=#{id}
+		 order by c.commentTime desc;
+	</select>
+	
+	<!-- 发布帖子 -->
+	<insert id="addPost" parameterType="postBean">
+		insert into t_posts(title,content,postTime,userId,modelId) values(#{title},#{content},
+		#{postTime},#{authorId},#{forumId});
+	</insert>
+	
+	<!-- 删除帖子 -->
+	
+	<delete id="delPost" parameterType="int">
+		delete from t_posts where id=#{id};
+		delete from t_comments where postId=#{id};
+	</delete>
+	
+	<!-- 回帖 -->
+	<insert id="comment" parameterType="commentBean">
+		insert into t_comments(content,commentTime,userId,postId) values
+		(#{content},#{commentTime},#{commenterId},#{postId});
+	</insert>
+	
+	<!-- 删除评论,管理员功能 -->
+	<delete id="delComment" parameterType="int">
+		delete from t_comments where id=#{id};
+	</delete>
+</mapper>

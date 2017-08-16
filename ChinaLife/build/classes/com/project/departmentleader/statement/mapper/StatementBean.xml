@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Statement">
+
+	<sql id="pageSql">
+		<if test="start != null ">
+			and insureTime >=#{start}
+		</if>
+		<if test="end != null">
+			<![CDATA[
+				and insureTime <=#{end}
+			]]>
+		</if>
+	</sql>
+	
+	<!-- 查询部门报表 -->
+	<select id="findByItem" resultType="departStatemenBean">
+		select COUNT(ic.id) as count, u.trueName as username FROM t_insurance_client as ic INNER JOIN t_users as u ON u.departId=ic.departmentId where  ic.followId =u.id AND ic.departmentId=#{id}  
+		<include refid="pageSql"/>
+		group by (followId)
+	</select>
+</mapper>

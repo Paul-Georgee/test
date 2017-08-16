@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="notice">
+	<!-- 查看所有公告,按时间降序排序 -->
+	<select id="findAll" resultType="noticeBean">
+		select * from t_notices ORDER BY noticeTime DESC
+	</select>
+	<!-- 根据ID查看公告 -->
+	<select id="findById" resultType="noticeBean">
+		select * from t_notices where id = #{id}
+	</select>
+	<!-- 添加公告 -->
+	<insert id="add" parameterType="noticeBean"
+	useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_notices(genre,title,content,filePath,noticeTime)
+		VALUES(#{genre},#{title},#{content},#{filePath},#{noticeTime})
+	</insert>
+	<!-- 按公告ID删除 -->
+	<delete id="del">
+		delete from t_notices where id = #{id} 
+	</delete>
+</mapper>
